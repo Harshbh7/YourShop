@@ -1,5 +1,6 @@
 // src/components/NavBar.jsx
-import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
+import { AppBar, Toolbar, Typography, Button, Box, IconButton, Tooltip } from "@mui/material";
+import LogoutIcon from "@mui/icons-material/Logout";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -22,8 +23,12 @@ const NavBar = () => {
           <Button color="inherit" onClick={() => navigate("/contact")}>Contact</Button>
         </Box>
 
-        {/* Right - Logout Button */}
-        <Button color="error" variant="contained" onClick={logout}>Logout</Button>
+        {/* Right - Logout Icon */}
+        <Tooltip title="Logout">
+          <IconButton color="error" onClick={logout}>
+            <LogoutIcon />
+          </IconButton>
+        </Tooltip>
       </Toolbar>
     </AppBar>
   );
