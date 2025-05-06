@@ -62,16 +62,14 @@ const NavBar = () => {
         >
           {/* Left: Welcome message */}
           <Typography
-  variant="h6"
-  sx={{
-    color: "#fff",
-    ml: isMobile ? "calc(40% - 30px)" : 0
-  }}
->
-  Welcome, Master
-</Typography>
-
-
+            variant="h6"
+            sx={{
+              color: "#fff",
+              ml: isMobile ? "calc(50% - 30px)" : 0
+            }}
+          >
+            Welcome, Master
+          </Typography>
 
           {/* Right: Desktop view navigation */}
           {!isMobile && (
@@ -107,12 +105,20 @@ const NavBar = () => {
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
         >
-          <Box sx={{ width: 250 }} role="presentation">
+          <Box
+            sx={{
+              width: 250,
+              backgroundColor: "#1F2937",
+              height: "100%",
+              color: "#fff"
+            }}
+            role="presentation"
+          >
             <List>
               {navLinks.map((item) => (
                 <ListItem key={item.label} disablePadding>
                   <ListItemButton onClick={() => handleNavigation(item.path)}>
-                    <ListItemText primary={item.label} />
+                    <ListItemText primary={item.label} sx={{ color: "#fff" }} />
                   </ListItemButton>
                 </ListItem>
               ))}
