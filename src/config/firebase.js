@@ -2,14 +2,15 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
+
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
-};
+    apiKey: "AIzaSyAMIAUpqWunL6UIwp0WhYj7klJJaPb5tpA",
+    authDomain: "yourshop-93ef4.firebaseapp.com",
+    projectId: "yourshop-93ef4",
+    storageBucket: "yourshop-93ef4.firebasestorage.app",
+    messagingSenderId: "961741817156",
+    appId: "1:961741817156:web:38a481f028b85a548dc311"
+  };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);

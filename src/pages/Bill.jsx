@@ -14,6 +14,7 @@ import {
   MenuItem,
   Select,
   IconButton,
+  Autocomplete,
 } from "@mui/material";
 import { AddCircle } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
@@ -28,7 +29,6 @@ const Bill = () => {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const navigate = useNavigate();
 
-  // Fetch users from Firebase
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -50,7 +50,6 @@ const Bill = () => {
     fetchUsers();
   }, []);
 
-  // Fetch products from Firebase
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -72,36 +71,31 @@ const Bill = () => {
     fetchProducts();
   }, []);
 
-  // Handle search type change
   const handleSearchTypeChange = (event) => {
     setSearchType(event.target.value);
     setSelectedUser("");
     setUserDetails(null);
   };
 
-  // Handle user selection from dropdown
-  const handleUserSelection = (event) => {
-    const selectedValue = event.target.value;
-    setSelectedUser(selectedValue);
-
+  const handleUserSelection = (value) => {
+    setSelectedUser(value);
     const foundUser = users.find((user) => {
-      if (searchType === "id") return user.srNo === selectedValue;
-      if (searchType === "mobile") return user.mobile === selectedValue;
-      if (searchType === "name") return user.name === selectedValue;
+      if (searchType === "id") return user.srNo === value;
+      if (searchType === "mobile") return user.mobile === value;
+      if (searchType === "name") return user.name === value;
       return false;
     });
-
     setUserDetails(foundUser || null);
   };
 
-  // Handle product selection
   const handleProductSelection = (index, field, value) => {
     const updatedProducts = [...selectedProducts];
-  
+
     if (field === "productQuantity") {
-      const quantity = Math.max(1, parseInt(value, 10) || 1); // Ensure minimum quantity is 1
+      const quantity = Math.max(1, parseInt(value, 10) || 1);
       updatedProducts[index].productQuantity = quantity;
-      updatedProducts[index].totalAmount = updatedProducts[index].productPrice * quantity;
+      updatedProducts[index].totalAmount =
+        updatedProducts[index].productPrice * quantity;
     } else if (field === "productId") {
       const selectedProduct = products.find((product) => product.id === value);
       if (selectedProduct) {
@@ -110,59 +104,66 @@ const Bill = () => {
           productId: selectedProduct.id,
           productName: selectedProduct.productName || "Unnamed Product",
           productPrice: selectedProduct.price || 0,
-          productQuantity: 1, // Default to 1
+          productQuantity: 1,
           totalAmount: selectedProduct.price ? selectedProduct.price * 1 : 0,
         };
       }
     }
-  
+
     setSelectedProducts(updatedProducts);
   };
-  
 
-  // Add a new product row
   const addProductRow = () => {
     setSelectedProducts([
       ...selectedProducts,
-      { srNo: selectedProducts.length + 1, productId: "", productName: "", productPrice: "", productQuantity: "", totalAmount: "" },
+      {
+        srNo: selectedProducts.length + 1,
+        productId: "",
+        productName: "",
+        productPrice: "",
+        productQuantity: "",
+        totalAmount: "",
+      },
     ]);
   };
 
-  // Handle Generate Bill button click
   const handleGenerateBill = async () => {
-  if (!userDetails || selectedProducts.length === 0) {
-    alert("Please select a user and at least one product.");
-    return;
-  }
-
-  const orderData = {
-    user: {
-      srNo: userDetails.srNo,
-      name: userDetails.name,
-      mobile: userDetails.mobile,
-    },
-    products: selectedProducts,
-    totalAmount: selectedProducts.reduce((sum, product) => sum + product.totalAmount, 0),
-    timestamp: new Date().toISOString(),
-  };
-
-  try {
-    const response = await axios.post(
-      "https://yourshop-93ef4-default-rtdb.firebaseio.com/Orders.json",
-      orderData
-    );
-
-    if (response.status === 200) {
-      alert("Order saved successfully!");
-      navigate("/Print", { state: { userDetails, selectedProducts } });
-    } else {
-      alert("Failed to save the order. Please try again.");
+    if (!userDetails || selectedProducts.length === 0) {
+      alert("Please select a user and at least one product.");
+      return;
     }
-  } catch (error) {
-    console.error("Error saving order:", error);
-    alert("An error occurred while saving the order.");
-  }
-}; 
+
+    const orderData = {
+      user: {
+        srNo: userDetails.srNo,
+        name: userDetails.name,
+        mobile: userDetails.mobile,
+      },
+      products: selectedProducts,
+      totalAmount: selectedProducts.reduce(
+        (sum, product) => sum + product.totalAmount,
+        0
+      ),
+      timestamp: new Date().toISOString(),
+    };
+
+    try {
+      const response = await axios.post(
+        "https://yourshop-93ef4-default-rtdb.firebaseio.com/Orders.json",
+        orderData
+      );
+
+      if (response.status === 200) {
+        alert("Order saved successfully!");
+        navigate("/Print", { state: { userDetails, selectedProducts } });
+      } else {
+        alert("Failed to save the order. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error saving order:", error);
+      alert("An error occurred while saving the order.");
+    }
+  };
 
   return (
     <Grid container spacing={2} justifyContent="center" sx={{ mt: 3 }}>
@@ -177,18 +178,33 @@ const Bill = () => {
             </RadioGroup>
           </FormControl>
 
-          {/* User Dropdown */}
+          {/* User Autocomplete Dropdown */}
           <FormControl fullWidth sx={{ mt: 2 }}>
-            <Select value={selectedUser} onChange={handleUserSelection} displayEmpty>
-              <MenuItem value="" disabled>
-                Select {searchType === "id" ? "User ID (Sr No)" : searchType === "mobile" ? "Mobile No" : "Name"}
-              </MenuItem>
-              {users.map((user) => (
-                <MenuItem key={user.id} value={searchType === "id" ? user.srNo : searchType === "mobile" ? user.mobile : user.name}>
-                  {searchType === "id" ? user.srNo : searchType === "mobile" ? user.mobile : user.name}
-                </MenuItem>
-              ))}
-            </Select>
+            <Autocomplete
+              freeSolo
+              options={users.map((user) =>
+                searchType === "id"
+                  ? user.srNo
+                  : searchType === "mobile"
+                  ? user.mobile
+                  : user.name
+              )}
+              value={selectedUser}
+              onChange={(event, newValue) => handleUserSelection(newValue || "")}
+              onInputChange={(event, newInputValue) => setSelectedUser(newInputValue)}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label={`Enter or select ${
+                    searchType === "id"
+                      ? "User ID (Sr No)"
+                      : searchType === "mobile"
+                      ? "Mobile No"
+                      : "Name"
+                  }`}
+                />
+              )}
+            />
           </FormControl>
 
           {userDetails && (
@@ -215,12 +231,16 @@ const Bill = () => {
                 <FormControl fullWidth>
                   <Select
                     value={product.productId}
-                    onChange={(e) => handleProductSelection(index, "productId", e.target.value)}
+                    onChange={(e) =>
+                      handleProductSelection(index, "productId", e.target.value)
+                    }
                     displayEmpty
                   >
                     <MenuItem value="" disabled>Select Product</MenuItem>
                     {products.map((prod) => (
-                      <MenuItem key={prod.id} value={prod.id}>{prod.productName || "Unnamed Product"}</MenuItem>
+                      <MenuItem key={prod.id} value={prod.id}>
+                        {prod.productName || "Unnamed Product"}
+                      </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
@@ -231,7 +251,15 @@ const Bill = () => {
               </Grid>
 
               <Grid item xs={2}>
-                <TextField label="Quantity" fullWidth type="number" value={product.productQuantity} onChange={(e) => handleProductSelection(index, "productQuantity", e.target.value)} />
+                <TextField
+                  label="Quantity"
+                  fullWidth
+                  type="number"
+                  value={product.productQuantity}
+                  onChange={(e) =>
+                    handleProductSelection(index, "productQuantity", e.target.value)
+                  }
+                />
               </Grid>
 
               <Grid item xs={2}>
@@ -244,7 +272,9 @@ const Bill = () => {
             <AddCircle fontSize="large" />
           </IconButton>
 
-          <Button variant="contained" sx={{ mt: 3 }} fullWidth onClick={handleGenerateBill}>Generate Bill</Button>
+          <Button variant="contained" sx={{ mt: 3 }} fullWidth onClick={handleGenerateBill}>
+            Generate Bill
+          </Button>
         </Paper>
       </Grid>
     </Grid>
